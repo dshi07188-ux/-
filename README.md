@@ -9,7 +9,19 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
 [![课时](https://img.shields.io/badge/课时-16%20次-blue.svg?style=flat-square)](#上课日期安排)
 [![校区](https://img.shields.io/badge/校区-长安-orange.svg?style=flat-square)](#课程信息)
-[![更新](https://img.shields.io/badge/最近更新-2026--11--01-lightgrey.svg?style=flat-square)](#更新日志)
+[![更新](https://img.shields.io/badge/最近更新-2026--11--02-lightgrey.svg?style=flat-square)](#更新日志)
+
+</div>
+
+---
+
+## 扫码访问
+
+<div align="center">
+
+[![课程资料仓库二维码](./assets/qrcode-repo.png)](https://github.com/dshi07188-ux/-)
+
+手机扫码直达本仓库 · 仓库地址：<https://github.com/dshi07188-ux/->
 
 </div>
 
@@ -19,7 +31,8 @@
 
 | | |
 | :--- | :--- |
-| [课程信息](#课程信息) | 上课时间、地点、学期安排 |
+| [课程信息](#课程信息) | 上课时间、地点、学期安排、授课教师联系方式 |
+| [扫码访问](#扫码访问) | 二维码，手机扫码直达本仓库 |
 | [上课日期安排](#上课日期安排) | 第 10～17 周全部 16 次课的具体日期 |
 | [课程资料目录](#课程资料目录) | 各章节课件与演示资源 |
 | [使用说明](#使用说明) | 如何查看课件、运行演示、同步更新 |
@@ -35,6 +48,7 @@
 | **上课地点** | 长安校区 教东 C-311 |
 | **学期起始** | 2026-08-31（第 1 周周一） |
 | **总课时** | 16 次课（周一 8 次 + 周三 8 次） |
+| **授课教师** | [dongyuan.shi@nwpu.edu.cn](mailto:dongyuan.shi@nwpu.edu.cn)（课程答疑与资料问题请联系此邮箱） |
 
 ---
 
@@ -100,6 +114,7 @@ git pull
 
 | 日期 | 更新内容 |
 | :--- | :--- |
+| 2026-11-02 | README 新增授课教师邮箱与扫码访问二维码 |
 | 2026-11-01 | 发布第二章课件（第二讲 基础矩阵定义与运算） |
 | 2026-11-01 | 发布第一章课件（第一讲 导论：傅里叶变换与图像去模糊）及图像卷积交互演示页 |
 
