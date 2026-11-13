@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
 [![课时](https://img.shields.io/badge/课时-16%20次-blue.svg?style=flat-square)](#上课日期安排)
 [![校区](https://img.shields.io/badge/校区-长安-orange.svg?style=flat-square)](#课程信息)
-[![更新](https://img.shields.io/badge/最近更新-2026--11--09-lightgrey.svg?style=flat-square)](#更新日志)
+[![更新](https://img.shields.io/badge/最近更新-2026--11--13-lightgrey.svg?style=flat-square)](#更新日志)
 
 </div>
 
@@ -69,6 +69,7 @@
 | 第一章 | [图像卷积交互演示](./第一章/image_convolution_offline.html) | 离线网页 Demo |
 | 第二章 | [第二讲-基础矩阵定义与运算](./第二章/第二讲-基础矩阵定义与运算.pdf) | 课件 PDF |
 | 第三章 | [第三讲-凸函数与无约束优化（中）](./第三章/第三讲-凸函数与无约束优化（中）.pdf) | 课件 PDF |
+| 第四章 | [第四讲-自适应信号处理（中）](./第四章/第四讲-自适应信号处理（中）.pdf) | 课件 PDF |
 
 资料随课程进度持续更新。
 
@@ -102,6 +103,7 @@ git pull
 
 | 日期 | 更新内容 |
 | :--- | :--- |
+| 2026-11-13 | 发布第四章课件（自适应信号处理 中） |
 | 2026-11-09 | 发布第三章课件（凸函数与无约束优化 中） |
 | 2026-11-02 | README 新增授课教师联系方式 |
 | 2026-11-01 | 发布第二章课件（第二讲 基础矩阵定义与运算） |
