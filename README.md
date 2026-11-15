@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
 [![课时](https://img.shields.io/badge/课时-16%20次-blue.svg?style=flat-square)](#上课日期安排)
 [![校区](https://img.shields.io/badge/校区-长安-orange.svg?style=flat-square)](#课程信息)
-[![更新](https://img.shields.io/badge/最近更新-2026--11--13-lightgrey.svg?style=flat-square)](#更新日志)
+[![更新](https://img.shields.io/badge/最近更新-2026--11--15-lightgrey.svg?style=flat-square)](#更新日志)
 
 </div>
 
@@ -103,6 +103,7 @@ git pull
 
 | 日期 | 更新内容 |
 | :--- | :--- |
+| 2026-11-15 | 更新第四章课件修订版（54 页，压缩至 2.4 MB） |
 | 2026-11-13 | 发布第四章课件（自适应信号处理 中） |
 | 2026-11-09 | 发布第三章课件（凸函数与无约束优化 中） |
 | 2026-11-02 | README 新增授课教师联系方式 |
