@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K-均值（K-Means）迭代收敛动画演示 —— 回归、分类与聚类（第36页）</title>
+  <style>
+    :root {
+      --nwpu-blue: #0F3D7A;
+      --nwpu-lblue: #3D78C4;
+      --nwpu-pale: #EAF1FA;
+      --nwpu-red: #C0392B;
+      --nwpu-gold: #B9770E;
+      --nwpu-green: #1E8449;
+      --nwpu-gray: #566573;
+      --bg: #F4F6F9;
+      --card: #FFFFFF;
+      --border: #D6E0EC;
+      --text: #1A2530;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px 28px;
+      font-family: "Microsoft YaHei", "PingFang SC", -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .header {
+      max-width: 1120px;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--nwpu-blue);
+      padding-bottom: 10px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--nwpu-blue);
+    }
+    .header .sub {
+      font-size: 13px;
+      color: var(--nwpu-gray);
+    }
+    .toolbar {
+      max-width: 1120px;
+      margin: 0 auto 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    button {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #FFF;
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button:hover { background: var(--nwpu-pale); border-color: var(--nwpu-lblue); }
+    button.primary {
+      background: var(--nwpu-blue);
+      color: #FFF;
+      border-color: var(--nwpu-blue);
+    }
+    button.primary:hover { background: var(--nwpu-lblue); }
+    .toggles {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      color: var(--nwpu-gray);
+    }
+    .toggles label { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .main {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 6px rgba(15, 61, 122, 0.04);
+    }
+    .card-title {
+      display: inline-block;
+      background: var(--nwpu-blue);
+      color: #FFF;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+    }
+    .right-col { display: flex; flex-direction: column; gap: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th, td { padding: 7px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--nwpu-gray); font-weight: 600; }
+    .badge {
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+    .badge-run { background: var(--nwpu-pale); color: var(--nwpu-blue); }
+    .badge-ok { background: #E8F6EE; color: var(--nwpu-green); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>K-均值迭代：从初始划分（Iteration #0）到收敛</h1>
+    <div class="sub">智能信号处理与机器学习基础 · 回归、分类与聚类（课件第 36 页配套交互演示）</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="btn-group">
+      <button id="btnPlay" class="primary">▶ 自动播放收敛过程</button>
+      <button id="btnPrev">◀ 上一步</button>
+      <button id="btnNext">下一步 ▶</button>
+      <button id="btnReset">↺ 重置（第36页初始位置）</button>
+      <button id="btnRandom">🎲 随机初始质心</button>
+    </div>
+    <div class="toggles">
+      <label><input id="chkColorMode" type="checkbox" checked /> 按当前簇分配着色</label>
+      <label><input id="chkTrail" type="checkbox" checked /> 显示质心移动轨迹</label>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="card" style="text-align:center;">
+      <canvas id="plotCanvas" width="580" height="440" style="width:100%;max-width:580px;cursor:grab;border:1px solid var(--border);border-radius:6px;"></canvas>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--nwpu-gray);margin-top:8px;">
+        <span>💡 提示：可直接用鼠标拖动图中 <b>3 个空心圆质心</b> 观察不同初始位置下的收敛轨迹</span>
+        <span id="statusTag" style="font-weight:700;color:var(--nwpu-blue);">Iteration #0</span>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span class="card-title" style="margin-bottom:0;" id="stepTitle">Iteration #0：初始划分</span>
+          <span id="convBadge" class="badge badge-run">迭代中</span>
+        </div>
+        <p id="stepDesc" style="margin:8px 0 0;font-size:13.5px;line-height:1.65;color:#2C3E50;"></p>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span class="card-title" style="margin-bottom:0;background:var(--nwpu-red);">目标函数收敛曲线 J = ∑ₖ ∑ₓ‖x − μₖ‖²</span>
+          <span id="valJ" style="font-family:monospace;font-weight:700;font-size:15px;color:var(--nwpu-red);">J = 7.3128</span>
+        </div>
+        <canvas id="lossCanvas" width="400" height="145" style="width:100%;"></canvas>
+      </div>
+
+      <div class="card">
+        <span class="card-title">各簇质心坐标与样本数统计</span>
+        <table>
+          <thead>
+            <tr>
+              <th>簇 / 标记</th>
+              <th>当前质心 μₖ = (x₁, x₂)</th>
+              <th style="text-align:right;">簇内样本数</th>
+            </tr>
+          </thead>
+          <tbody id="clusterTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const RAW_POINTS = [[0.2693, 0.6342], [0.2975, 0.7595], [0.1266, 0.6176], [0.2581, 0.68], [0.2489, 0.646], [0.3056, 0.7492], [0.2542, 0.7713], [0.2796, 0.6457], [0.2733, 0.6394], [0.3056, 0.6968], [0.2383, 0.6569], [0.3273, 0.6902], [0.2229, 0.6777], [0.2837, 0.7231], [0.2761, 0.7272], [0.3854, 0.6743], [0.2176, 0.6485], [0.289, 0.7714], [0.2428, 0.6469], [0.1979, 0.7411], [0.297, 0.7344], [0.2079, 0.7147], [0.2574, 0.7138], [0.3051, 0.7141], [0.2929, 0.7043], [0.2683, 0.7399], [0.1578, 0.6798], [0.2203, 0.6596], [0.2326, 0.7945], [0.1952, 0.7612], [0.1436, 0.6788], [0.2603, 0.7371], [0.295, 0.7502], [0.2279, 0.6708], [0.3043, 0.6879], [0.1693, 0.6283], [0.1918, 0.7314], [0.259, 0.7437], [0.223, 0.71], [0.2896, 0.6804], [0.2789, 0.6581], [0.227, 0.6759], [0.1744, 0.7308], [0.2203, 0.7008], [0.2804, 0.7282], [0.2921, 0.6938], [0.2232, 0.695], [0.1433, 0.6085], [0.1663, 0.6369], [0.2753, 0.6427], [0.2261, 0.7822], [0.2275, 0.7466], [0.191, 0.687], [0.1899, 0.6786], [0.3031, 0.5908], [0.2775, 0.715], [0.2124, 0.6085], [0.2546, 0.6665], [0.2647, 0.7014], [0.3513, 0.6849], [0.3853, 0.4613], [0.4639, 0.536], [0.5028, 0.4726], [0.5425, 0.3748], [0.4095, 0.3914], [0.4253, 0.3629], [0.4902, 0.4359], [0.357, 0.3858], [0.4698, 0.503], [0.5763, 0.6343], [0.4762, 0.3874], [0.3152, 0.4669], [0.3986, 0.4237], [0.4113, 0.4411], [0.5174, 0.4599], [0.44, 0.3845], [0.3441, 0.4192], [0.4466, 0.5618], [0.4582, 0.5122], [0.4184, 0.3751], [0.389, 0.4041], [0.5846, 0.3981], [0.503, 0.3929], [0.5089, 0.4743], [0.4401, 0.4474], [0.4086, 0.4782], [0.4212, 0.3725], [0.3692, 0.4609], [0.5499, 0.4601], [0.4425, 0.4681], [0.5326, 0.4639], [0.424, 0.52], [0.4771, 0.5471], [0.4616, 0.3726], [0.3635, 0.5544], [0.559, 0.4386], [0.4258, 0.5424], [0.38, 0.3934], [0.4907, 0.425], [0.4497, 0.4397], [0.4714, 0.539], [0.4557, 0.4907], [0.3203, 0.4469], [0.3967, 0.3729], [0.3945, 0.4289], [0.5079, 0.3661], [0.4519, 0.4194], [0.4293, 0.5134], [0.484, 0.5346], [0.4402, 0.406], [0.4358, 0.4653], [0.4612, 0.3814], [0.4557, 0.4644], [0.6092, 0.5687], [0.396, 0.4318], [0.3574, 0.4126], [0.47, 0.5263], [0.4039, 0.4086], [0.3142, 0.4397], [0.3828, 0.4165], [0.7245, 0.774], [0.6688, 0.6872], [0.9147, 0.6986], [0.7106, 0.8962], [0.9637, 0.7059], [0.7567, 0.8016], [0.8893, 0.7176], [0.7645, 0.8292], [0.8075, 0.7562], [0.7715, 0.693], [0.7649, 0.7632], [0.7947, 0.7449], [0.8098, 0.844], [0.7898, 0.8022], [0.7834, 0.78], [0.7344, 0.8], [0.7738, 0.9124], [0.8795, 0.8044], [0.7317, 0.7096], [0.8553, 0.7966], [0.8104, 0.6697], [0.8387, 0.8087], [0.7098, 0.7502], [0.7967, 0.7833], [0.7615, 0.7735], [0.7641, 0.7896], [0.8731, 0.6177], [0.765, 0.7912], [0.7987, 0.7565], [0.6689, 0.8007], [0.8892, 0.683], [0.8346, 0.7592], [0.7761, 0.7134], [0.7588, 0.8622], [0.8169, 0.8896], [0.8545, 0.8078], [0.8903, 0.8078], [0.8324, 0.7612], [0.7842, 0.7359], [0.8426, 0.7055], [0.8295, 0.7679], [0.8541, 0.8275], [0.8951, 0.8262], [0.6806, 0.7758], [0.7059, 0.7472], [0.8756, 0.8203], [0.7358, 0.7159], [0.7821, 0.7031], [0.7376, 0.7997], [0.8531, 0.8185], [0.6351, 0.7992], [0.7846, 0.8062], [0.8822, 0.6495], [0.7426, 0.8174], [0.68, 0.8733], [0.8033, 0.8335], [0.7439, 0.8315], [0.8476, 0.7947], [0.7948, 0.7971], [0.7254, 0.7707]];
+
+    const DEFAULT_INIT = [
+      [0.45, 0.68],
+      [0.72, 0.30],
+      [0.68, 0.78]
+    ];
+
+    const CLUSTER_META = [
+      { name: "簇 1 (+)", color: "#C0392B", fill: "rgba(192, 57, 43, 0.08)", shape: "plus", page36CircleColor: "#B9770E" },
+      { name: "簇 2 (×)", color: "#B9770E", fill: "rgba(185, 119, 14, 0.08)", shape: "cross", page36CircleColor: "#C0392B" },
+      { name: "簇 3 (●)", color: "#0F3D7A", fill: "rgba(15, 61, 122, 0.08)", shape: "circle", page36CircleColor: "#0F3D7A" }
+    ];
+
+    const X_MIN = 0.0, X_MAX = 1.0;
+    const Y_MIN = 0.1, Y_MAX = 0.95;
+
+    let initCentroids = DEFAULT_INIT.map(c => [...c]);
+    let history = [];
+    let currentStep = 0;
+    let animProgress = 1.0;
+    let animFromCentroids = null;
+    let animRaf = null;
+    let playTimer = null;
+    let draggingIdx = -1;
+
+    const plotCanvas = document.getElementById("plotCanvas");
+    const ctx = plotCanvas.getContext("2d");
+    const lossCanvas = document.getElementById("lossCanvas");
+    const lctx = lossCanvas.getContext("2d");
+
+    function dist2(a, b) {
+      const dx = a[0] - b[0], dy = a[1] - b[1];
+      return dx * dx + dy * dy;
+    }
+
+    function assignLabels(centroids) {
+      const labels = new Array(RAW_POINTS.length);
+      let J = 0;
+      const counts = [0, 0, 0];
+      for (let i = 0; i < RAW_POINTS.length; i++) {
+        const p = RAW_POINTS[i];
+        let bestK = 0, bestD = Infinity;
+        for (let k = 0; k < 3; k++) {
+          const d = dist2(p, centroids[k]);
+          if (d < bestD) { bestD = d; bestK = k; }
+        }
+        labels[i] = bestK;
+        counts[bestK]++;
+        J += bestD;
+      }
+      return { labels, J, counts };
+    }
+
+    function computeHistory(startCentroids) {
+      const steps = [];
+      let mu = startCentroids.map(c => [...c]);
+      for (let iter = 0; iter < 15; iter++) {
+        const { labels, J, counts } = assignLabels(mu);
+        const newMu = [0, 1, 2].map(k => {
+          let sx = 0, sy = 0, cnt = 0;
+          for (let i = 0; i < RAW_POINTS.length; i++) {
+            if (labels[i] === k) {
+              sx += RAW_POINTS[i][0];
+              sy += RAW_POINTS[i][1];
+              cnt++;
+            }
+          }
+          return cnt > 0 ? [sx / cnt, sy / cnt] : [...mu[k]];
+        });
+        const moved = Math.max(
+          Math.hypot(newMu[0][0] - mu[0][0], newMu[0][1] - mu[0][1]),
+          Math.hypot(newMu[1][0] - mu[1][0], newMu[1][1] - mu[1][1]),
+          Math.hypot(newMu[2][0] - mu[2][0], newMu[2][1] - mu[2][1])
+        );
+        const converged = moved < 1e-5;
+        steps.push({
+          iter,
+          centroids: mu.map(c => [...c]),
+          nextCentroids: newMu.map(c => [...c]),
+          labels,
+          J,
+          counts,
+          converged
+        });
+        if (converged) break;
+        mu = newMu;
+      }
+      return steps;
+    }
+
+    function computeVoronoiCell(k, centroids) {
+      let poly = [
+        [X_MIN, Y_MIN],
+        [X_MAX, Y_MIN],
+        [X_MAX, Y_MAX],
+        [X_MIN, Y_MAX]
+      ];
+      const mk = centroids[k];
+      for (let j = 0; j < centroids.length; j++) {
+        if (j === k) continue;
+        const mj = centroids[j];
+        const nx = mj[0] - mk[0];
+        const ny = mj[1] - mk[1];
+        if (Math.hypot(nx, ny) < 1e-9) continue;
+        const midX = 0.5 * (mk[0] + mj[0]);
+        const midY = 0.5 * (mk[1] + mj[1]);
+        const inside = (p) => ((p[0] - midX) * nx + (p[1] - midY) * ny) <= 1e-9;
+        const intersect = (a, b) => {
+          const da = (a[0] - midX) * nx + (a[1] - midY) * ny;
+          const db = (b[0] - midX) * nx + (b[1] - midY) * ny;
+          const t = da / (da - db);
+          return [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])];
+        };
+        const out = [];
+        for (let i = 0; i < poly.length; i++) {
+          const cur = poly[i];
+          const prev = poly[(i + poly.length - 1) % poly.length];
+          const curIn = inside(cur);
+          const prevIn = inside(prev);
+          if (curIn) {
+            if (!prevIn) out.push(intersect(prev, cur));
+            out.push(cur);
+          } else if (prevIn) {
+            out.push(intersect(prev, cur));
+          }
+        }
+        poly = out;
+        if (poly.length === 0) break;
+      }
+      return poly;
+    }
+
+    const PAD = { left: 48, right: 18, top: 16, bottom: 38 };
+    function toScreenX(x) {
+      const w = plotCanvas.width - PAD.left - PAD.right;
+      return PAD.left + ((x - X_MIN) / (X_MAX - X_MIN)) * w;
+    }
+    function toScreenY(y) {
+      const h = plotCanvas.height - PAD.top - PAD.bottom;
+      return plotCanvas.height - PAD.bottom - ((y - Y_MIN) / (Y_MAX - Y_MIN)) * h;
+    }
+    function toDataX(px) {
+      const w = plotCanvas.width - PAD.left - PAD.right;
+      return Math.max(X_MIN + 0.02, Math.min(X_MAX - 0.02, X_MIN + ((px - PAD.left) / w) * (X_MAX - X_MIN)));
+    }
+    function toDataY(py) {
+      const h = plotCanvas.height - PAD.top - PAD.bottom;
+      return Math.max(Y_MIN + 0.02, Math.min(Y_MAX - 0.02, Y_MIN + ((plotCanvas.height - PAD.bottom - py) / h) * (Y_MAX - Y_MIN)));
+    }
+
+    function getDisplayedCentroids() {
+      const target = history[currentStep].centroids;
+      if (!animFromCentroids || animProgress >= 1.0) return target;
+      const t = 1 - Math.pow(1 - animProgress, 3);
+      return target.map((c, k) => [
+        animFromCentroids[k][0] + t * (c[0] - animFromCentroids[k][0]),
+        animFromCentroids[k][1] + t * (c[1] - animFromCentroids[k][1])
+      ]);
+    }
+
+    function drawMarker(ctx, shape, x, y, color) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      if (shape === "plus") {
+        const r = 4.6;
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.moveTo(x - r, y); ctx.lineTo(x + r, y);
+        ctx.moveTo(x, y - r); ctx.lineTo(x, y + r);
+        ctx.stroke();
+      } else if (shape === "cross") {
+        const r = 4.0;
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r);
+        ctx.moveTo(x - r, y + r); ctx.lineTo(x + r, y - r);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, 4.0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawAll() {
+      const bgCol = "#FFFFFF";
+      const axisCol = "#566573";
+      const gridCol = "rgba(86,101,115,0.12)";
+      const voronoiLineCol = "#566573";
+      const textCol = "#0F172A";
+
+      const dispCentroids = getDisplayedCentroids();
+      const liveAssign = assignLabels(dispCentroids);
+      const byClusterColor = document.getElementById("chkColorMode").checked;
+      const showTrail = document.getElementById("chkTrail").checked;
+
+      ctx.clearRect(0, 0, plotCanvas.width, plotCanvas.height);
+      ctx.fillStyle = bgCol;
+      ctx.fillRect(0, 0, plotCanvas.width, plotCanvas.height);
+
+      const plotW = plotCanvas.width - PAD.left - PAD.right;
+      const plotH = plotCanvas.height - PAD.top - PAD.bottom;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(PAD.left, PAD.top, plotW, plotH);
+      ctx.clip();
+
+      const cells = [0, 1, 2].map(k => computeVoronoiCell(k, dispCentroids));
+      for (let k = 0; k < 3; k++) {
+        const poly = cells[k];
+        if (poly.length < 3) continue;
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(poly[0][0]), toScreenY(poly[0][1]));
+        for (let i = 1; i < poly.length; i++) {
+          ctx.lineTo(toScreenX(poly[i][0]), toScreenY(poly[i][1]));
+        }
+        ctx.closePath();
+        ctx.fillStyle = CLUSTER_META[k].fill;
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = gridCol;
+      ctx.lineWidth = 1;
+      for (let xv = 0.2; xv <= 0.81; xv += 0.2) {
+        const sx = toScreenX(xv);
+        ctx.beginPath(); ctx.moveTo(sx, PAD.top); ctx.lineTo(sx, PAD.top + plotH); ctx.stroke();
+      }
+      for (let yv = 0.2; yv <= 0.91; yv += 0.1) {
+        const sy = toScreenY(yv);
+        ctx.beginPath(); ctx.moveTo(PAD.left, sy); ctx.lineTo(PAD.left + plotW, sy); ctx.stroke();
+      }
+
+      for (let k = 0; k < 3; k++) {
+        const poly = cells[k];
+        if (poly.length < 2) continue;
+        for (let i = 0; i < poly.length; i++) {
+          const a = poly[i];
+          const b = poly[(i + 1) % poly.length];
+          const onLeft = Math.abs(a[0] - X_MIN) < 1e-4 && Math.abs(b[0] - X_MIN) < 1e-4;
+          const onRight = Math.abs(a[0] - X_MAX) < 1e-4 && Math.abs(b[0] - X_MAX) < 1e-4;
+          const onBottom = Math.abs(a[1] - Y_MIN) < 1e-4 && Math.abs(b[1] - Y_MIN) < 1e-4;
+          const onTop = Math.abs(a[1] - Y_MAX) < 1e-4 && Math.abs(b[1] - Y_MAX) < 1e-4;
+          if (onLeft || onRight || onBottom || onTop) continue;
+          ctx.strokeStyle = voronoiLineCol;
+          ctx.lineWidth = 2.1;
+          ctx.beginPath();
+          ctx.moveTo(toScreenX(a[0]), toScreenY(a[1]));
+          ctx.lineTo(toScreenX(b[0]), toScreenY(b[1]));
+          ctx.stroke();
+        }
+      }
+
+      for (let i = 0; i < RAW_POINTS.length; i++) {
+        const p = RAW_POINTS[i];
+        const trueCluster = i < 60 ? 0 : (i < 120 ? 1 : 2);
+        const assignedCluster = liveAssign.labels[i];
+        const meta = byClusterColor ? CLUSTER_META[assignedCluster] : CLUSTER_META[trueCluster];
+        drawMarker(ctx, meta.shape, toScreenX(p[0]), toScreenY(p[1]), meta.color);
+      }
+
+      if (showTrail && currentStep > 0) {
+        for (let k = 0; k < 3; k++) {
+          const cCol = byClusterColor ? CLUSTER_META[k].color : CLUSTER_META[k].page36CircleColor;
+          ctx.save();
+          ctx.strokeStyle = cCol;
+          ctx.lineWidth = 1.8;
+          ctx.setLineDash([5, 3]);
+          ctx.beginPath();
+          for (let s = 0; s < currentStep; s++) {
+            const pt = history[s].centroids[k];
+            const sx = toScreenX(pt[0]), sy = toScreenY(pt[1]);
+            if (s === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.lineTo(toScreenX(dispCentroids[k][0]), toScreenY(dispCentroids[k][1]));
+          ctx.stroke();
+          ctx.restore();
+
+          for (let s = 0; s < currentStep; s++) {
+            const pt = history[s].centroids[k];
+            ctx.beginPath();
+            ctx.arc(toScreenX(pt[0]), toScreenY(pt[1]), 5.0, 0, Math.PI * 2);
+            ctx.strokeStyle = cCol;
+            ctx.lineWidth = 1.3;
+            ctx.globalAlpha = 0.45;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+          }
+        }
+      }
+
+      for (let k = 0; k < 3; k++) {
+        const c = dispCentroids[k];
+        const sx = toScreenX(c[0]), sy = toScreenY(c[1]);
+        const cCol = byClusterColor ? CLUSTER_META[k].color : CLUSTER_META[k].page36CircleColor;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 10.5, 0, Math.PI * 2);
+        ctx.strokeStyle = bgCol;
+        ctx.lineWidth = 4.6;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(sx, sy, 10.5, 0, Math.PI * 2);
+        ctx.strokeStyle = cCol;
+        ctx.lineWidth = 2.8;
+        ctx.stroke();
+      }
+
+      ctx.font = "bold 19px sans-serif";
+      ctx.fillStyle = textCol;
+      ctx.fillText(`Iteration #${currentStep}`, PAD.left + 12, PAD.top + plotH - 14);
+
+      ctx.restore();
+
+      ctx.strokeStyle = axisCol;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(PAD.left, PAD.top);
+      ctx.lineTo(PAD.left, PAD.top + plotH);
+      ctx.lineTo(PAD.left + plotW, PAD.top + plotH);
+      ctx.stroke();
+
+      ctx.fillStyle = axisCol;
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "center";
+      for (let xv = 0.0; xv <= 1.01; xv += 0.2) {
+        const sx = toScreenX(xv);
+        ctx.beginPath();
+        ctx.moveTo(sx, PAD.top + plotH);
+        ctx.lineTo(sx, PAD.top + plotH + 4);
+        ctx.stroke();
+        ctx.fillText(xv.toFixed(1), sx, PAD.top + plotH + 17);
+      }
+      ctx.font = "italic 14px serif";
+      ctx.fillText("x₁", PAD.left + plotW / 2, plotCanvas.height - 5);
+
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "right";
+      for (let yv = 0.1; yv <= 0.91; yv += 0.1) {
+        const sy = toScreenY(yv);
+        ctx.beginPath();
+        ctx.moveTo(PAD.left - 4, sy);
+        ctx.lineTo(PAD.left, sy);
+        ctx.stroke();
+        ctx.fillText(yv.toFixed(1), PAD.left - 7, sy + 4);
+      }
+      ctx.save();
+      ctx.translate(14, PAD.top + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.font = "italic 14px serif";
+      ctx.fillText("x₂", 0, 0);
+      ctx.restore();
+
+      updateSidePanel(dispCentroids, liveAssign);
+      drawLossChart(axisCol);
+    }
+
+    function updateSidePanel(dispCentroids, liveAssign) {
+      const stepObj = history[currentStep];
+      const maxStep = history.length - 1;
+      document.getElementById("statusTag").textContent = `Iteration #${currentStep} / #${maxStep}`;
+      document.getElementById("valJ").textContent = `J = ${liveAssign.J.toFixed(4)}`;
+
+      const badge = document.getElementById("convBadge");
+      if (stepObj.converged) {
+        badge.textContent = "✓ 已收敛";
+        badge.className = "badge badge-ok";
+      } else {
+        badge.textContent = `迭代中 (${currentStep}/${maxStep})`;
+        badge.className = "badge badge-run";
+      }
+
+      const titleEl = document.getElementById("stepTitle");
+      const descEl = document.getElementById("stepDesc");
+      if (currentStep === 0) {
+        titleEl.textContent = "Iteration #0：初始划分（第36页状态）";
+        descEl.textContent = `3 个空心圆为随机选取的初始质心，灰色折线为按最近质心得到的 Voronoi 边界。此时左上质心吞并了两个簇共 ${liveAssign.counts[0]} 个样本，右下质心仅分到中间簇底部的 ${liveAssign.counts[1]} 个样本。`;
+      } else if (stepObj.converged) {
+        titleEl.textContent = `Iteration #${currentStep}：质心不再变化，算法收敛！`;
+        descEl.textContent = `3 个质心已分别归位到各自真实簇的中心，各簇样本数为 (${liveAssign.counts.join(", ")})，目标函数 J 降至最小值 ${liveAssign.J.toFixed(4)}，划分不再改变。`;
+      } else {
+        titleEl.textContent = `Iteration #${currentStep}：质心移动与 Voronoi 边界更新`;
+        descEl.textContent = `各质心移动到上一轮簇内所有样本的均值处，Voronoi 边界随之平移旋转，各簇样本数更新为 (${liveAssign.counts.join(", ")})，目标函数 J 单调下降。`;
+      }
+
+      const tbody = document.getElementById("clusterTable");
+      tbody.innerHTML = [0, 1, 2].map(k => {
+        const c = dispCentroids[k];
+        return `<tr>
+          <td style="font-weight:700;color:${CLUSTER_META[k].color}">${CLUSTER_META[k].name}</td>
+          <td style="font-family:monospace;">(${c[0].toFixed(3)}, ${c[1].toFixed(3)})</td>
+          <td style="text-align:right;font-weight:700;">${liveAssign.counts[k]}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    function drawLossChart(axisCol) {
+      lctx.clearRect(0, 0, lossCanvas.width, lossCanvas.height);
+      const padL = 38, padR = 16, padT = 14, padB = 26;
+      const w = lossCanvas.width - padL - padR;
+      const h = lossCanvas.height - padT - padB;
+
+      const maxJ = Math.max(...history.map(s => s.J), 2.0);
+      const minJ = 0.0;
+      const maxIter = Math.max(history.length - 1, 1);
+
+      const sx = (iter) => padL + (iter / maxIter) * w;
+      const sy = (j) => padT + h - ((j - minJ) / (maxJ - minJ)) * h;
+
+      lctx.strokeStyle = axisCol;
+      lctx.lineWidth = 1;
+      lctx.beginPath();
+      lctx.moveTo(padL, padT);
+      lctx.lineTo(padL, padT + h);
+      lctx.lineTo(padL + w, padT + h);
+      lctx.stroke();
+
+      lctx.save();
+      lctx.strokeStyle = axisCol;
+      lctx.globalAlpha = 0.35;
+      lctx.setLineDash([4, 3]);
+      lctx.beginPath();
+      history.forEach((s, idx) => {
+        if (idx === 0) lctx.moveTo(sx(idx), sy(s.J));
+        else lctx.lineTo(sx(idx), sy(s.J));
+      });
+      lctx.stroke();
+      lctx.restore();
+
+      lctx.strokeStyle = "#0F3D7A";
+      lctx.lineWidth = 2.4;
+      lctx.beginPath();
+      for (let i = 0; i <= currentStep; i++) {
+        if (i === 0) lctx.moveTo(sx(i), sy(history[i].J));
+        else lctx.lineTo(sx(i), sy(history[i].J));
+      }
+      lctx.stroke();
+
+      lctx.font = "11px sans-serif";
+      lctx.textAlign = "center";
+      history.forEach((s, idx) => {
+        const x = sx(idx), y = sy(s.J);
+        lctx.beginPath();
+        lctx.arc(x, y, idx === currentStep ? 5 : 3.5, 0, Math.PI * 2);
+        lctx.fillStyle = idx === currentStep ? "#C0392B" : (idx < currentStep ? "#0F3D7A" : axisCol);
+        lctx.fill();
+        lctx.fillStyle = axisCol;
+        lctx.fillText(`Iter #${idx}`, x, padT + h + 16);
+      });
+
+      lctx.textAlign = "right";
+      lctx.fillStyle = axisCol;
+      lctx.fillText(maxJ.toFixed(1), padL - 5, padT + 9);
+      lctx.fillText("0.0", padL - 5, padT + h);
+    }
+
+    function animateToStep(targetStep) {
+      if (targetStep < 0 || targetStep >= history.length) return;
+      animFromCentroids = getDisplayedCentroids().map(c => [...c]);
+      currentStep = targetStep;
+      animProgress = 0.0;
+      if (animRaf) cancelAnimationFrame(animRaf);
+      const startTime = performance.now();
+      const duration = 550;
+      function tick(now) {
+        animProgress = Math.min(1.0, (now - startTime) / duration);
+        drawAll();
+        if (animProgress < 1.0) {
+          animRaf = requestAnimationFrame(tick);
+        }
+      }
+      animRaf = requestAnimationFrame(tick);
+    }
+
+    function stopAutoPlay() {
+      if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+      }
+      document.getElementById("btnPlay").textContent = "▶ 自动播放收敛过程";
+    }
+
+    function toggleAutoPlay() {
+      if (playTimer) {
+        stopAutoPlay();
+        return;
+      }
+      if (currentStep >= history.length - 1) {
+        currentStep = 0;
+        animProgress = 1.0;
+        drawAll();
+      }
+      document.getElementById("btnPlay").textContent = "⏸ 暂停";
+      playTimer = setInterval(() => {
+        if (currentStep < history.length - 1) {
+          animateToStep(currentStep + 1);
+        } else {
+          stopAutoPlay();
+        }
+      }, 1000);
+    }
+
+    document.getElementById("btnPlay").addEventListener("click", toggleAutoPlay);
+    document.getElementById("btnPrev").addEventListener("click", () => {
+      stopAutoPlay();
+      if (currentStep > 0) animateToStep(currentStep - 1);
+    });
+    document.getElementById("btnNext").addEventListener("click", () => {
+      stopAutoPlay();
+      if (currentStep < history.length - 1) animateToStep(currentStep + 1);
+    });
+    document.getElementById("btnReset").addEventListener("click", () => {
+      stopAutoPlay();
+      initCentroids = DEFAULT_INIT.map(c => [...c]);
+      history = computeHistory(initCentroids);
+      currentStep = 0;
+      animProgress = 1.0;
+      drawAll();
+    });
+    document.getElementById("btnRandom").addEventListener("click", () => {
+      stopAutoPlay();
+      initCentroids = [0, 1, 2].map(() => [
+        0.12 + Math.random() * 0.78,
+        0.18 + Math.random() * 0.70
+      ]);
+      history = computeHistory(initCentroids);
+      currentStep = 0;
+      animProgress = 1.0;
+      drawAll();
+    });
+    document.getElementById("chkColorMode").addEventListener("change", drawAll);
+    document.getElementById("chkTrail").addEventListener("change", drawAll);
+
+    function getMousePos(e) {
+      const rect = plotCanvas.getBoundingClientRect();
+      const scaleX = plotCanvas.width / rect.width;
+      const scaleY = plotCanvas.height / rect.height;
+      return [
+        (e.clientX - rect.left) * scaleX,
+        (e.clientY - rect.top) * scaleY
+      ];
+    }
+
+    plotCanvas.addEventListener("mousedown", (e) => {
+      const [mx, my] = getMousePos(e);
+      const disp = getDisplayedCentroids();
+      for (let k = 0; k < 3; k++) {
+        const sx = toScreenX(disp[k][0]), sy = toScreenY(disp[k][1]);
+        if (Math.hypot(mx - sx, my - sy) <= 15) {
+          stopAutoPlay();
+          initCentroids = disp.map(c => [...c]);
+          draggingIdx = k;
+          break;
+        }
+      }
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (draggingIdx < 0) return;
+      const [mx, my] = getMousePos(e);
+      initCentroids[draggingIdx] = [toDataX(mx), toDataY(my)];
+      history = computeHistory(initCentroids);
+      currentStep = 0;
+      animProgress = 1.0;
+      drawAll();
+    });
+
+    window.addEventListener("mouseup", () => {
+      draggingIdx = -1;
+    });
+
+    history = computeHistory(initCentroids);
+    drawAll();
+  </script>
+</body>
+</html>
