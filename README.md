@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
 [![课时](https://img.shields.io/badge/课时-16%20次-blue.svg?style=flat-square)](#上课日期安排)
 [![校区](https://img.shields.io/badge/校区-长安-orange.svg?style=flat-square)](#课程信息)
-[![更新](https://img.shields.io/badge/最近更新-2026--11--18-lightgrey.svg?style=flat-square)](#更新日志)
+[![更新](https://img.shields.io/badge/最近更新-2026--11--22-lightgrey.svg?style=flat-square)](#更新日志)
 
 </div>
 
@@ -71,6 +71,8 @@
 | 第三章 | [第三讲-凸函数与无约束优化（中）](./第三章/第三讲-凸函数与无约束优化（中）.pdf) | 课件 PDF |
 | 第四章 | [第四讲-自适应信号处理（中）](./第四章/第四讲-自适应信号处理（中）.pdf) | 课件 PDF |
 | 第五章 | [第五讲-短时傅里叶变换与语音增强](./第五章/第五讲-短时傅里叶变换与语音增强.pdf) | 课件 PDF |
+| 第六章 | [第六讲-回归、分类与聚类](./第六章/第六讲-回归、分类与聚类.pdf) | 课件 PDF |
+| 第七章 | [第七讲-等式约束优化](./第七章/第七讲-等式约束优化.pdf) | 课件 PDF |
 
 资料随课程进度持续更新。
 
@@ -104,6 +106,7 @@ git pull
 
 | 日期 | 更新内容 |
 | :--- | :--- |
+| 2026-11-22 | 发布第六章（回归、分类与聚类）与第七章（等式约束优化）课件 |
 | 2026-11-18 | 发布第五章课件（短时傅里叶变换与语音增强，61 页） |
 | 2026-11-15 | 更新第四章课件修订版（54 页，压缩至 2.4 MB） |
 | 2026-11-13 | 发布第四章课件（自适应信号处理 中） |
